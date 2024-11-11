@@ -1,56 +1,34 @@
-#VM and Hypervisor Detection in C++
-This repository contains a C++ program that detects if it is running inside a virtual machine (VM) or on a physical (host) machine. If the program determines it is on a host machine, it further checks for the presence of any hypervisors to detect virtualized environments.
+# Virtual Machine and Hypervisor Detection
 
-Table of Contents
-Introduction
-Features
-Detection Techniques
-Inside VM Detection
-Host Machine Hypervisor Detection
-Installation
-Usage
-License
-Introduction
-Virtualization detection can be useful for software that needs to differentiate between virtualized and physical environments. This code identifies whether it is running on a VM or a physical host and checks for hypervisor presence on the host system. Common use cases include:
+This project contains code that detects whether it's running inside a Virtual Machine (VM) or on a physical host machine. If running on a host, it further checks for the presence of hypervisors. This code uses various techniques to determine if it’s in a virtualized environment, leveraging aspects like CPUID, BIOS information, disk enumeration, environment variables, MAC addresses, and running processes.
 
-Preventing execution in sandboxed environments
-Ensuring software runs only on physical machines
-Protecting against reverse engineering in VMs
-Features
-Detects if the program is running in a virtual machine.
-Checks for specific VM indicators like BIOS, virtual disk, and MAC address prefixes.
-If running on a host machine, checks for hypervisors (VMs) running on the same system.
-Detection Techniques
-Inside VM Detection
-The following techniques are used to detect if the program is running inside a VM:
+## Overview
 
-BIOS Check: Identifies VM-specific BIOS manufacturers (e.g., VMware, VirtualBox, Microsoft).
-Virtual Disk Check: Searches for specific disk signatures associated with VMs in the registry.
-Environment Variable Check: Checks for environment variables set by VMs, such as VBOX and VMWARE.
-MAC Address Check: Looks for MAC address prefixes unique to virtualized environments.
-VM Processes Check: Checks for processes specific to VM environments, like vmware.exe or vboxservice.exe.
-Host Machine Hypervisor Detection
-If the code determines it’s running on a host machine, it uses additional techniques to detect hypervisors on the system:
+The code is written in C++ and relies on Windows-specific APIs to inspect various system attributes. Here’s a breakdown of what each function does:
 
-CPUID Instruction: Uses the CPUID assembly instruction to check for hypervisor presence.
-Other Techniques: You can expand this detection for other hypervisors if needed.
-Installation
-To compile and run the code, follow these steps:
+- **CheckForVirtualCPU**: Uses the CPUID instruction to detect if a hypervisor is present. This checks the 31st bit of the `ECX` register to see if a hypervisor is detected, which is an indicator of virtualization.
 
-Clone the repository:
+- **CheckForVirtualBIOS**: Inspects the system BIOS manufacturer string in the registry to see if it contains keywords associated with virtual environments, such as "VMware," "VirtualBox," "QEMU," "Microsoft Corporation" (for Hyper-V), and "Parallels."
 
-bash
-Copier le code
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
-Compile the code:
+- **CheckForVirtualDisk**: Examines registry entries related to disk hardware to look for strings that suggest a virtual disk, like "VMware," "VBOX," and "QEMU."
 
-Make sure you have a C++ compiler (e.g., Visual Studio, g++) installed on your system.
-Compile the code in a Windows environment to support Windows-specific APIs used in the code.
-For example, in Visual Studio, create a new C++ project and add the source files to the project.
+- **CheckEnvironmentVariables**: Checks environment variables for values commonly set by virtual environments, such as "VBOX" or "VMWARE".
 
-Run the program:
+- **CheckMACAddress**: Queries the system’s network adapters to inspect MAC addresses that are commonly associated with virtual machines, like those starting with `00:05:69` (VMware) or `08:00:27` (VirtualBox).
 
-Execute the compiled program to see the results in the console.
-Usage
-Upon running, the program will print whether it is running inside a VM or on a host machine. If it detects a host machine, it will check for the presence of hypervisors and existing VMs on the system.
+- **CheckVMProcesses**: Looks for specific processes that are usually associated with virtual machines, such as `vmware.exe`, `vboxservice.exe`, and `qemu-ga.exe`.
+
+## Usage
+
+The program first determines if it’s running inside a VM. If it detects that it’s on a host machine, it checks for hypervisor indicators.
+
+### Example Output
+
+The output of this program will indicate whether it’s running inside a virtual machine, or if it detects the presence of a hypervisor on a host system. Example outputs may include:
+
+- `"Running inside a Virtual Machine!"`
+- `"Running on the Host Machine. Checking for hypervisors and existing VMs..."`
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
